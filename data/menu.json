@@ -2,7 +2,7 @@
   "schema_version": 1,
   "source": "https://hqdc.bupt.edu.cn/mb/",
   "campus": "沙河",
-  "captured_at": "2026-10-07T16:56:40.637641+08:00",
+  "captured_at": "2026-10-07T17:02:57.564191+08:00",
   "menu_date": "20261007",
   "windows": [
     {
@@ -11865,20 +11865,14 @@
             "price_yuan": 10.0
           },
           {
-            "id": 15203,
-            "name": "馋猫泰式打抛饭",
+            "id": 15641,
+            "name": "馋猫干锅鸡块",
             "category": "盖饭类",
-            "price_yuan": 18.0
+            "price_yuan": 20.0
           },
           {
             "id": 9350,
             "name": "馋猫尖椒鸡蛋盖饭",
-            "category": "盖饭类",
-            "price_yuan": 12.0
-          },
-          {
-            "id": 9351,
-            "name": "馋猫红烧茄子盖饭",
             "category": "盖饭类",
             "price_yuan": 12.0
           },
@@ -11947,12 +11941,6 @@
             "name": "馋猫孜然牛肉盖饭",
             "category": "盖饭类",
             "price_yuan": 18.0
-          },
-          {
-            "id": 10687,
-            "name": "馋猫雪菜鸡丝盖饭",
-            "category": "盖饭类",
-            "price_yuan": 16.0
           },
           {
             "id": 10697,
@@ -12061,6 +12049,72 @@
             "name": "馋猫渣渣牛肉饭",
             "category": "盖饭类",
             "price_yuan": 20.0
+          },
+          {
+            "id": 15203,
+            "name": "馋猫泰式打抛饭",
+            "category": "盖饭类",
+            "price_yuan": 18.0
+          },
+          {
+            "id": 15616,
+            "name": "馋猫水煮肉片",
+            "category": "盖饭类",
+            "price_yuan": 17.0
+          },
+          {
+            "id": 15617,
+            "name": "馋猫水煮牛肉",
+            "category": "盖饭类",
+            "price_yuan": 18.0
+          },
+          {
+            "id": 15618,
+            "name": "馋猫豆花肉片",
+            "category": "盖饭类",
+            "price_yuan": 17.0
+          },
+          {
+            "id": 15619,
+            "name": "馋猫金汤酸菜鱼",
+            "category": "盖饭类",
+            "price_yuan": 18.0
+          },
+          {
+            "id": 15620,
+            "name": "馋猫干锅花菜",
+            "category": "盖饭类",
+            "price_yuan": 20.0
+          },
+          {
+            "id": 15630,
+            "name": "馋猫豆花鱼",
+            "category": "盖饭类",
+            "price_yuan": 18.0
+          },
+          {
+            "id": 15631,
+            "name": "馋猫番茄巴沙鱼",
+            "category": "盖饭类",
+            "price_yuan": 18.0
+          },
+          {
+            "id": 15632,
+            "name": "馋猫水煮鱼",
+            "category": "盖饭类",
+            "price_yuan": 18.0
+          },
+          {
+            "id": 15633,
+            "name": "馋猫干锅排骨",
+            "category": "盖饭类",
+            "price_yuan": 19.0
+          },
+          {
+            "id": 15634,
+            "name": "馋猫干锅土豆片",
+            "category": "盖饭类",
+            "price_yuan": 18.0
           },
           {
             "id": 9349,
