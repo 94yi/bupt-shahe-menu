@@ -6,6 +6,10 @@ const MEAL_NAMES = { breakfast: "早餐", lunch: "午餐", dinner: "晚餐", lat
 let menu = null;
 let reviews = [];
 
+function isSnack(dish) {
+  return dish.name.includes("单点不送");
+}
+
 function recommendationCandidates() {
   if (!menu) return [];
   const canteen = $("canteen").value;
@@ -19,6 +23,7 @@ function recommendationCandidates() {
     for (const [meal, dishes] of Object.entries(windowItem.meals)) {
       if (mealFilter && meal !== mealFilter) continue;
       for (const dish of dishes) {
+        if (isSnack(dish)) continue;
         const key = `${windowItem.id}:${dish.id ?? dish.name}`;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -39,7 +44,7 @@ function pickFood() {
   target.replaceChildren();
   const candidates = recommendationCandidates();
   if (!candidates.length) {
-    target.textContent = "暂无菜品，请换个食堂、窗口或餐次。";
+    target.textContent = "暂无可推荐的主食，请换个食堂、窗口或餐次。";
     return;
   }
   const weights = candidates.map((item) => item.average == null ? 3 : 1 + item.average);
@@ -96,19 +101,31 @@ function renderPreview() {
     const heading = document.createElement("strong");
     heading.textContent = MEAL_NAMES[meal] || meal;
     target.append(heading);
-    const list = document.createElement("ul");
-    for (const dish of windowItem.meals[meal] || []) {
-      const row = document.createElement("li");
-      row.textContent = dish.name;
-      if (typeof dish.price_yuan === "number") {
-        const price = document.createElement("span");
-        price.className = "price";
-        price.textContent = `¥${dish.price_yuan}`;
-        row.append(price);
+    const dishes = windowItem.meals[meal] || [];
+    const groups = [
+      ["主食", dishes.filter((dish) => !isSnack(dish))],
+      ["小吃（单点不送）", dishes.filter(isSnack)],
+    ];
+    for (const [label, items] of groups) {
+      if (!items.length) continue;
+      const category = document.createElement("p");
+      category.className = "menu-category";
+      category.textContent = label;
+      target.append(category);
+      const list = document.createElement("ul");
+      for (const dish of items) {
+        const row = document.createElement("li");
+        row.textContent = dish.name;
+        if (typeof dish.price_yuan === "number") {
+          const price = document.createElement("span");
+          price.className = "price";
+          price.textContent = `¥${dish.price_yuan}`;
+          row.append(price);
+        }
+        list.append(row);
       }
-      list.append(row);
+      target.append(list);
     }
-    target.append(list);
   }
 }
 

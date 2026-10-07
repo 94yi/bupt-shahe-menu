@@ -56,3 +56,5 @@ button{border:0;border-radius:11px;padding:13px 18px;font:inherit;font-weight:72
 @media(max-width:760px){.masthead{padding:44px 0 36px}.layout{grid-template-columns:1fr}.card{padding:22px}.grid-two{grid-template-columns:1fr}.wrap{width:min(100% - 28px,1120px)}}
 
 h1{letter-spacing:-.03em}
+
+.menu-category{margin:12px 0 4px;font-weight:650;color:var(--muted)}
