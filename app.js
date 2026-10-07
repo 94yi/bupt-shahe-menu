@@ -7,7 +7,7 @@ let menu = null;
 let reviews = [];
 
 function isSnack(dish) {
-  return dish.name.includes("单点不送");
+  return /单点[\s\S]*不送/.test(dish.name);
 }
 
 function recommendationCandidates() {
