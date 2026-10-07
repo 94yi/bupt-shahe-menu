@@ -39,7 +39,7 @@ function pickFood() {
   target.replaceChildren();
   const candidates = recommendationCandidates();
   if (!candidates.length) {
-    target.textContent = "这个范围里还没有菜品，换个食堂、窗口或餐次试试。";
+    target.textContent = "";
     return;
   }
   const weights = candidates.map((item) => item.average == null ? 3 : 1 + item.average);
@@ -54,9 +54,9 @@ function pickFood() {
   const place = document.createElement("span");
   place.textContent = `${chosen.windowItem.canteen} / ${chosen.windowItem.window} · ${MEAL_NAMES[chosen.meal]}`;
   const detail = document.createElement("small");
-  const price = typeof chosen.dish.price_yuan === "number" ? `¥${chosen.dish.price_yuan}` : "价格未标注";
-  const rating = chosen.reviewCount ? ` · 点评 ${chosen.average.toFixed(1)}/5（${chosen.reviewCount} 条）` : " · 暂无点评";
-  detail.textContent = `${price}${rating} · 月度菜单，供应以官网为准`;
+  const price = typeof chosen.dish.price_yuan === "number" ? `¥${chosen.dish.price_yuan}` : "";
+  const rating = chosen.reviewCount ? ` · ★ ${chosen.average.toFixed(1)}/5 (${chosen.reviewCount})` : "";
+  detail.textContent = `${price}${rating}`;
   target.append(title, place, detail);
 }
 
@@ -88,7 +88,7 @@ function renderPreview() {
   target.replaceChildren();
   const windowItem = selectedWindow();
   if (!windowItem) {
-    target.textContent = "选好食堂和窗口后，这里会显示菜品。";
+    target.textContent = "";
     return;
   }
   const meals = $("meal").value ? [$("meal").value] : Object.keys(windowItem.meals);
@@ -119,7 +119,7 @@ function renderReviews() {
   const relevant = windowId ? reviews.filter((item) => item.window_id === windowId) : reviews;
   const latest = relevant.slice().sort((a, b) => b.visit_date.localeCompare(a.visit_date)).slice(0, 8);
   if (!latest.length) {
-    target.textContent = "这里还没有点评。吃过的话，欢迎留下第一条。";
+    target.textContent = "";
     return;
   }
   for (const item of latest) {
@@ -137,9 +137,9 @@ function renderReviews() {
 }
 
 function updateWindows() {
-  reset($("window"), "选择窗口");
-  reset($("meal"), "先选窗口");
-  reset($("dish"), "先选餐次");
+  reset($("window"), "");
+  reset($("meal"), "");
+  reset($("dish"), "");
   const canteen = $("canteen").value;
   if (canteen) {
     for (const windowItem of menu.windows.filter((item) => item.canteen === canteen)) {
@@ -152,8 +152,8 @@ function updateWindows() {
 }
 
 function updateMeals() {
-  reset($("meal"), "选择餐次");
-  reset($("dish"), "先选餐次");
+  reset($("meal"), "");
+  reset($("dish"), "");
   const windowItem = selectedWindow();
   if (windowItem) {
     for (const meal of Object.keys(windowItem.meals)) option($("meal"), meal, MEAL_NAMES[meal] || meal);
@@ -164,12 +164,12 @@ function updateMeals() {
 }
 
 function updateDishes() {
-  reset($("dish"), "选择菜品");
+  reset($("dish"), "");
   const windowItem = selectedWindow();
   const meal = $("meal").value;
   if (windowItem && meal) {
     windowItem.meals[meal].forEach((dish, index) => option($("dish"), index, dish.name));
-    option($("dish"), "other", "其他菜品（手动填写）");
+    option($("dish"), "other", "＋");
     $("dish").disabled = false;
   }
   $("manual-dish-label").hidden = true;
@@ -188,10 +188,8 @@ async function loadData() {
     const canteens = [...new Set(menu.windows.map((item) => item.canteen))].sort();
     for (const name of canteens) option($("canteen"), name, name);
     $("pick-food").disabled = false;
-    $("snapshot-status").textContent = `沙河菜单快照：${menu.menu_date} · ${menu.windows.length} 个窗口 · 每月更新`;
   } catch {
-    $("snapshot-status").textContent = "菜单暂时不可用，稍后再试";
-    $("menu-preview").textContent = "没有可用的菜单快照。";
+    $("menu-preview").textContent = "";
     $("review-form").hidden = true;
   }
   try {
@@ -255,7 +253,7 @@ $("review-form").addEventListener("submit", (event) => {
 
 $("copy-json").addEventListener("click", async () => {
   await navigator.clipboard.writeText($("review-json").value);
-  $("copy-json").textContent = "已复制";
+  $("copy-json").textContent = "✓";
 });
 
 loadData();

@@ -4,90 +4,72 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="theme-color" content="#f6f4ee">
-  <title>沙河今天吃什么 · 菜单与点评</title>
+  <title>今天吃什么（沙河食堂？）</title>
   <link rel="stylesheet" href="style.css">
   <script src="app.js" defer></script>
 </head>
 <body>
   <header class="masthead">
     <div class="wrap">
-      <p class="eyebrow">BUPT · 沙河校区</p>
-      <h1>食堂这顿，<br><em>吃点好的。</em></h1>
-      <p class="lead">按食堂、窗口找菜，也把真实吃过的感受留给后来的人。</p>
-      <p id="snapshot-status" class="snapshot">正在读取菜单快照…</p>
+      <h1>今天吃什么（沙河食堂？）</h1>
+      <p id="snapshot-status" hidden></p>
     </div>
   </header>
 
   <main class="wrap layout">
-    <section class="card form-card" aria-labelledby="review-title">
-      <div class="section-head"><span class="index">01 / 点评</span><h2 id="review-title">说说这道菜</h2></div>
-      <p class="hint">只收沙河食堂评价；提交时会打开 GitHub，由你确认后发起 Pull Request。</p>
+    <section class="card form-card" aria-label="点评">
       <form id="review-form">
         <div class="grid-two">
-          <label>食堂
-            <select id="canteen" required><option value="">选择食堂</option></select>
+          <label><select id="canteen" aria-label="食堂" required><option value=""></option></select>
           </label>
-          <label>窗口
-            <select id="window" required disabled><option value="">先选食堂</option></select>
+          <label><select id="window" aria-label="窗口" required disabled><option value=""></option></select>
           </label>
         </div>
         <div class="grid-two">
-          <label>餐次
-            <select id="meal" required disabled><option value="">先选窗口</option></select>
+          <label><select id="meal" aria-label="餐次" required disabled><option value=""></option></select>
           </label>
-          <label>菜品
-            <select id="dish" required disabled><option value="">先选餐次</option></select>
+          <label><select id="dish" aria-label="菜品" required disabled><option value=""></option></select>
           </label>
         </div>
-        <label id="manual-dish-label" hidden>菜单里没有？填写菜名
-          <input id="manual-dish" maxlength="120" placeholder="请输入实际吃到的菜名">
+        <label id="manual-dish-label" hidden><input id="manual-dish" aria-label="菜名" maxlength="120">
         </label>
-        <label>实际吃的日期
-          <input id="visit-date" type="date" required>
+        <label><input id="visit-date" aria-label="实际吃的日期" type="date" required>
         </label>
         <fieldset class="rating">
-          <legend>打几分？</legend>
+
           <div class="stars" role="radiogroup" aria-label="评分，1 到 5 分">
-            <label><input type="radio" name="rating" value="1" required><span>1</span></label>
-            <label><input type="radio" name="rating" value="2"><span>2</span></label>
-            <label><input type="radio" name="rating" value="3"><span>3</span></label>
-            <label><input type="radio" name="rating" value="4"><span>4</span></label>
-            <label><input type="radio" name="rating" value="5"><span>5</span></label>
+            <label><input type="radio" name="rating" value="1" aria-label="1 分" required><span aria-hidden="true">★</span></label>
+            <label><input type="radio" name="rating" value="2" aria-label="2 分"><span aria-hidden="true">★★</span></label>
+            <label><input type="radio" name="rating" value="3" aria-label="3 分"><span aria-hidden="true">★★★</span></label>
+            <label><input type="radio" name="rating" value="4" aria-label="4 分"><span aria-hidden="true">★★★★</span></label>
+            <label><input type="radio" name="rating" value="5" aria-label="5 分"><span aria-hidden="true">★★★★★</span></label>
           </div>
         </fieldset>
-        <label>一句真实体验 <span class="optional">（最多 500 字）</span>
-          <textarea id="comment" maxlength="500" rows="4" placeholder="口味、分量、排队时间……具体一点，更能帮到大家" required></textarea>
+        <label>
+          <textarea id="comment" aria-label="体验" maxlength="500" rows="4" required></textarea>
         </label>
-        <p class="privacy">不要填写学号、手机号或他人的个人信息。GitHub PR 作者身份会公开。</p>
-        <button class="primary" type="submit">生成评价，去 GitHub 提 PR ↗</button>
+          <button class="primary" type="submit" aria-label="提交评价到 GitHub">↗</button>
       </form>
       <div id="prepared" class="prepared" hidden>
-        <p><strong>评价 JSON 已准备好。</strong>若 GitHub 没有自动填入，请复制下面的内容，作为新文件提交。</p>
         <code id="review-filename"></code>
         <textarea id="review-json" rows="10" readonly aria-label="评价 JSON"></textarea>
-        <button id="copy-json" type="button">复制 JSON</button>
+        <button id="copy-json" type="button" aria-label="复制 JSON">⧉</button>
       </div>
     </section>
 
     <aside class="side">
-      <section class="card" aria-labelledby="pick-title">
-        <div class="section-head"><span class="index">02 / 帮我选</span><h2 id="pick-title">这顿吃什么</h2></div>
-        <p class="hint">可先在左侧选食堂、窗口和餐次缩小范围；留空就从沙河菜单里挑。已合并的点评会影响推荐权重。</p>
-        <button id="pick-food" class="primary" type="button" disabled>从菜单里挑一道</button>
+      <section class="card" aria-label="推荐">
+            <button id="pick-food" class="primary" type="button" disabled aria-label="随机推荐">⚄</button>
         <div id="pick-result" class="pick-result" role="status" aria-live="polite"></div>
       </section>
-      <section class="card" aria-labelledby="menu-title">
-        <div class="section-head"><span class="index">03 / 菜单</span><h2 id="menu-title">快照里有什么</h2></div>
-        <p class="hint">每月更新，不能代表此刻是否在售。点餐以 <a href="https://hqdc.bupt.edu.cn/mb/" target="_blank" rel="noopener noreferrer">e 键订餐</a> 为准。</p>
-        <div id="menu-preview" class="menu-preview">选好食堂和窗口后，这里会显示菜品。</div>
+      <section class="card" aria-label="菜单">
+            <div id="menu-preview" class="menu-preview"></div>
       </section>
-      <section class="card" aria-labelledby="recent-title">
-        <div class="section-head"><span class="index">04 / 大家说</span><h2 id="recent-title">最近的点评</h2></div>
-        <div id="recent-reviews" class="recent-reviews">正在读取点评…</div>
+      <section class="card" aria-label="点评列表">
+          <div id="recent-reviews" class="recent-reviews"></div>
       </section>
     </aside>
   </main>
 
-  <footer class="wrap footer">社区项目 · 非学校官方服务 · <a href="https://github.com/94yi/bupt-shahe-menu" target="_blank" rel="noopener noreferrer">查看 GitHub 仓库</a></footer>
 </body>
 </html>
