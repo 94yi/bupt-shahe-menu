@@ -10,6 +10,30 @@ function isAddon(dish) {
   return /单点[\s\S]*不送/.test(dish.name);
 }
 
+function mealsForWindow(windowItem) {
+  const meals = new Set(Object.keys(windowItem.meals));
+  if (meals.has("lunch") || meals.has("dinner")) {
+    meals.add("lunch");
+    meals.add("dinner");
+  }
+  return Object.keys(MEAL_NAMES).filter((meal) => meals.has(meal));
+}
+
+function dishesForMeal(windowItem, meal) {
+  if (!windowItem) return [];
+  if (windowItem.meals[meal]?.length) return windowItem.meals[meal];
+  if (meal === "lunch") return windowItem.meals.dinner || [];
+  if (meal === "dinner") return windowItem.meals.lunch || [];
+  return [];
+}
+
+function mealDescription(windowItem, meal) {
+  if (!windowItem.meals[meal]?.length && (meal === "lunch" || meal === "dinner")) {
+    return `${MEAL_NAMES[meal]} · 常规菜单，实际供应为准`;
+  }
+  return `${MEAL_NAMES[meal] || meal} · ${menu.meal_dates?.[meal] || menu.menu_date}`;
+}
+
 function recommendationCandidates() {
   if (!menu) return [];
   const canteen = $("canteen").value;
@@ -20,7 +44,8 @@ function recommendationCandidates() {
   for (const windowItem of menu.windows) {
     if (canteen && windowItem.canteen !== canteen) continue;
     if (windowId && String(windowItem.id) !== windowId) continue;
-    for (const [meal, dishes] of Object.entries(windowItem.meals)) {
+    for (const meal of mealsForWindow(windowItem)) {
+      const dishes = dishesForMeal(windowItem, meal);
       if (mealFilter && meal !== mealFilter) continue;
       for (const dish of dishes) {
         if (isAddon(dish)) continue;
@@ -57,7 +82,7 @@ function pickFood() {
   const title = document.createElement("strong");
   title.textContent = chosen.dish.name;
   const place = document.createElement("span");
-  place.textContent = `${chosen.windowItem.canteen} / ${chosen.windowItem.window} · ${MEAL_NAMES[chosen.meal]} · ${menu.meal_dates?.[chosen.meal] || menu.menu_date}`;
+  place.textContent = `${chosen.windowItem.canteen} / ${chosen.windowItem.window} · ${mealDescription(chosen.windowItem, chosen.meal)}`;
   const detail = document.createElement("small");
   const price = typeof chosen.dish.price_yuan === "number" ? `¥${chosen.dish.price_yuan}` : "价格未标注";
   const rating = chosen.reviewCount ? ` · 点评 ${chosen.average.toFixed(1)}/5（${chosen.reviewCount} 条）` : " · 暂无点评";
@@ -84,7 +109,7 @@ function selectedWindow() {
 
 function selectedDish() {
   const windowItem = selectedWindow();
-  const dishes = windowItem?.meals[$("meal").value] || [];
+  const dishes = dishesForMeal(windowItem, $("meal").value);
   return dishes.find((item, index) => String(index) === $("dish").value);
 }
 
@@ -96,12 +121,12 @@ function renderPreview() {
     target.textContent = "选好食堂和窗口后，这里会显示菜品。";
     return;
   }
-  const meals = $("meal").value ? [$("meal").value] : Object.keys(windowItem.meals);
+  const meals = $("meal").value ? [$("meal").value] : mealsForWindow(windowItem);
   for (const meal of meals) {
     const heading = document.createElement("strong");
-    heading.textContent = `${MEAL_NAMES[meal] || meal} · ${menu.meal_dates?.[meal] || menu.menu_date}`;
+    heading.textContent = mealDescription(windowItem, meal);
     target.append(heading);
-    const dishes = windowItem.meals[meal] || [];
+    const dishes = dishesForMeal(windowItem, meal);
     const groups = [
       ["推荐菜品", dishes.filter((dish) => !isAddon(dish))],
       ["加餐/单点不送的食物", dishes.filter(isAddon)],
@@ -173,7 +198,7 @@ function updateMeals() {
   reset($("dish"), "先选餐次");
   const windowItem = selectedWindow();
   if (windowItem) {
-    for (const meal of Object.keys(windowItem.meals)) option($("meal"), meal, MEAL_NAMES[meal] || meal);
+    for (const meal of mealsForWindow(windowItem)) option($("meal"), meal, MEAL_NAMES[meal] || meal);
     $("meal").disabled = false;
   }
   renderPreview();
@@ -185,7 +210,7 @@ function updateDishes() {
   const windowItem = selectedWindow();
   const meal = $("meal").value;
   if (windowItem && meal) {
-    windowItem.meals[meal].forEach((dish, index) => option($("dish"), index, dish.name));
+    dishesForMeal(windowItem, meal).forEach((dish, index) => option($("dish"), index, dish.name));
     option($("dish"), "other", "其他菜品（手动填写）");
     $("dish").disabled = false;
   }

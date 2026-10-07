@@ -20,9 +20,9 @@ class SnapshotTests(unittest.TestCase):
         self.assertEqual(result['meal_dates'], {'lunch': '20261008', 'dinner': '20261007'})
         self.assertTrue(all(set(w['meals']) == {'lunch', 'dinner'} for w in result['windows']))
 
-    def test_missing_lunch_does_not_publish_dinner_only(self):
-        with self.assertRaisesRegex(ValueError, 'missing lunch or dinner'):
-            self.snapshot(lambda day, meal, window, token: self.dishes if meal == '12' else [])
+    def test_missing_both_main_meals_does_not_publish(self):
+        with self.assertRaisesRegex(ValueError, 'missing both lunch and dinner'):
+            self.snapshot(lambda day, meal, window, token: self.dishes if meal == '10' else [])
 
     def test_partial_query_failure_does_not_publish(self):
         def dishes(day, meal, window, token):

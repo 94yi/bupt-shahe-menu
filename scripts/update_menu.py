@@ -167,8 +167,8 @@ def build_snapshot(token: str, *, now: datetime | None = None) -> dict:
             if found:
                 meal_dates[meal] = query_date
                 break
-    if not {"lunch", "dinner"}.issubset(meal_dates):
-        raise ValueError("missing lunch or dinner after querying today and tomorrow; "
+    if not {"lunch", "dinner"}.intersection(meal_dates):
+        raise ValueError("missing both lunch and dinner after querying today and tomorrow; "
                          "keeping the previous snapshot")
     windows = sorted(
         (entry for entry in windows_by_id.values() if entry["meals"]),
