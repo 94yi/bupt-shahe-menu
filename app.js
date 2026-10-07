@@ -6,7 +6,7 @@ const MEAL_NAMES = { breakfast: "早餐", lunch: "午餐", dinner: "晚餐", lat
 let menu = null;
 let reviews = [];
 
-function isSnack(dish) {
+function isAddon(dish) {
   return /单点[\s\S]*不送/.test(dish.name);
 }
 
@@ -23,7 +23,7 @@ function recommendationCandidates() {
     for (const [meal, dishes] of Object.entries(windowItem.meals)) {
       if (mealFilter && meal !== mealFilter) continue;
       for (const dish of dishes) {
-        if (isSnack(dish)) continue;
+        if (isAddon(dish)) continue;
         const key = `${windowItem.id}:${dish.id ?? dish.name}`;
         if (seen.has(key)) continue;
         seen.add(key);
@@ -44,7 +44,7 @@ function pickFood() {
   target.replaceChildren();
   const candidates = recommendationCandidates();
   if (!candidates.length) {
-    target.textContent = "暂无可推荐的主食，请换个食堂、窗口或餐次。";
+    target.textContent = "暂无可推荐的菜品，请换个食堂、窗口或餐次。";
     return;
   }
   const weights = candidates.map((item) => item.average == null ? 3 : 1 + item.average);
@@ -103,8 +103,8 @@ function renderPreview() {
     target.append(heading);
     const dishes = windowItem.meals[meal] || [];
     const groups = [
-      ["主食", dishes.filter((dish) => !isSnack(dish))],
-      ["小吃（单点不送）", dishes.filter(isSnack)],
+      ["推荐菜品", dishes.filter((dish) => !isAddon(dish))],
+      ["加餐/单点不送的食物", dishes.filter(isAddon)],
     ];
     for (const [label, items] of groups) {
       if (!items.length) continue;
