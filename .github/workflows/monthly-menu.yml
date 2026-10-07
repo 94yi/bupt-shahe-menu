@@ -21,7 +21,9 @@ jobs:
           BUPT_MENU_TOKEN: ${{ secrets.BUPT_MENU_TOKEN }}
         run: python scripts/update_menu.py
       - name: Validate snapshot and site
-        run: python scripts/build_site.py
+        run: |
+          python -m unittest discover -s tests
+          python scripts/build_site.py
       - name: Commit changed menu
         run: |
           if ! git diff --quiet -- data/menu.json; then
