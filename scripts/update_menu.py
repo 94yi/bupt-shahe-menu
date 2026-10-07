@@ -8,10 +8,9 @@ import os
 import re
 import sys
 import time
-from datetime import datetime
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from urllib.request import Request, urlopen
-from zoneinfo import ZoneInfo
 
 
 BASE = "https://hqdc.bupt.edu.cn/mobile/wxapp/"
@@ -110,35 +109,52 @@ def _public_dishes(date: str, meal_id: str, window_id: int, token: str) -> list[
 
 
 def build_snapshot(token: str, *, now: datetime | None = None) -> dict:
-    instant = now or datetime.now(ZoneInfo("Asia/Shanghai"))
+    instant = now or datetime.now(timezone(timedelta(hours=8)))
     date = instant.strftime("%Y%m%d")
     windows_by_id: dict[int, dict] = {}
     queries = 0
     failures = 0
+    meal_dates = {}
     for meal, meal_id in MEALS.items():
-        for raw in _windows_for_meal(date, meal_id, token):
-            window_id = raw.get("windowid")
-            name = raw.get("windowname")
-            canteen = raw.get("shopname")
-            if type(window_id) is not int or not isinstance(name, str):
-                continue
-            if "沙河" not in name + str(canteen or ""):
-                continue
-            entry = windows_by_id.setdefault(window_id, {
-                "id": window_id,
-                "canteen": str(canteen or "")[:120],
-                "window": name[:120],
-                "meals": {},
-            })
-            queries += 1
-            try:
-                dishes = _public_dishes(date, meal_id, window_id, token)
-            except (OSError, ValueError):
-                failures += 1
-                continue
-            if dishes:
-                entry["meals"][meal] = dishes
-            time.sleep(0.06)
+        for query_date in (date, (instant + timedelta(days=1)).strftime("%Y%m%d")):
+            found = 0
+            meal_failures = 0
+            raw_windows = _windows_for_meal(query_date, meal_id, token)
+            for raw in raw_windows:
+                window_id = raw.get("windowid")
+                name = raw.get("windowname")
+                canteen = raw.get("shopname")
+                if type(window_id) is not int or not isinstance(name, str):
+                    continue
+                if "沙河" not in name + str(canteen or ""):
+                    continue
+                queries += 1
+                try:
+                    dishes = _public_dishes(query_date, meal_id, window_id, token)
+                except (OSError, ValueError):
+                    failures += 1
+                    meal_failures += 1
+                    continue
+                if dishes:
+                    entry = windows_by_id.setdefault(window_id, {
+                        "id": window_id,
+                        "canteen": str(canteen or "")[:120],
+                        "window": name[:120],
+                        "meals": {},
+                    })
+                    entry["meals"][meal] = dishes
+                    found += len(dishes)
+                time.sleep(0.06)
+            print(f"Meal {meal} date {query_date}: {len(raw_windows)} windows returned, "
+                  f"{found} dishes, {meal_failures} failed queries", flush=True)
+            if meal_failures:
+                raise ValueError(f"incomplete {meal} queries; keeping previous snapshot")
+            if found:
+                meal_dates[meal] = query_date
+                break
+    if not {"lunch", "dinner"}.issubset(meal_dates):
+        raise ValueError("missing lunch or dinner after querying today and tomorrow; "
+                         "keeping the previous snapshot")
     windows = sorted(
         (entry for entry in windows_by_id.values() if entry["meals"]),
         key=lambda item: (item["canteen"], item["window"]),
@@ -156,6 +172,7 @@ def build_snapshot(token: str, *, now: datetime | None = None) -> dict:
         "campus": "沙河",
         "captured_at": instant.isoformat(),
         "menu_date": date,
+        "meal_dates": meal_dates,
         "windows": windows,
     }
 

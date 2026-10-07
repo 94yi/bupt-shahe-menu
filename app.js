@@ -57,7 +57,7 @@ function pickFood() {
   const title = document.createElement("strong");
   title.textContent = chosen.dish.name;
   const place = document.createElement("span");
-  place.textContent = `${chosen.windowItem.canteen} / ${chosen.windowItem.window} · ${MEAL_NAMES[chosen.meal]}`;
+  place.textContent = `${chosen.windowItem.canteen} / ${chosen.windowItem.window} · ${MEAL_NAMES[chosen.meal]} · ${menu.meal_dates?.[chosen.meal] || menu.menu_date}`;
   const detail = document.createElement("small");
   const price = typeof chosen.dish.price_yuan === "number" ? `¥${chosen.dish.price_yuan}` : "价格未标注";
   const rating = chosen.reviewCount ? ` · 点评 ${chosen.average.toFixed(1)}/5（${chosen.reviewCount} 条）` : " · 暂无点评";
@@ -99,7 +99,7 @@ function renderPreview() {
   const meals = $("meal").value ? [$("meal").value] : Object.keys(windowItem.meals);
   for (const meal of meals) {
     const heading = document.createElement("strong");
-    heading.textContent = MEAL_NAMES[meal] || meal;
+    heading.textContent = `${MEAL_NAMES[meal] || meal} · ${menu.meal_dates?.[meal] || menu.menu_date}`;
     target.append(heading);
     const dishes = windowItem.meals[meal] || [];
     const groups = [

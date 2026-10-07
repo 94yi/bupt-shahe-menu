@@ -6,9 +6,8 @@ import json
 import re
 import shutil
 import sys
-from datetime import date, datetime
+from datetime import date, datetime, timedelta, timezone
 from pathlib import Path
-from zoneinfo import ZoneInfo
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -67,7 +66,7 @@ def validate_review(review: object) -> None:
         visited = date.fromisoformat(review["visit_date"])
     except (TypeError, ValueError):
         raise ValueError("invalid review date") from None
-    if not date(2020, 1, 1) <= visited <= datetime.now(ZoneInfo("Asia/Shanghai")).date():
+    if not date(2020, 1, 1) <= visited <= datetime.now(timezone(timedelta(hours=8))).date():
         raise ValueError("review date is outside the allowed range")
 
 
