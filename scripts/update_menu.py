@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+from concurrent.futures import ThreadPoolExecutor
 import argparse
 import json
 import os
@@ -43,7 +44,7 @@ def request_menu(endpoint: str, body: dict, token: str) -> dict:
             raise ValueError("menu response too large")
     result = json.loads(payload)
     if not isinstance(result, dict) or result.get("retcode") != 200:
-        raise ValueError("menu query failed or login expired")
+        raise ValueError(f"menu query failed (retcode={result.get('retcode') if isinstance(result, dict) else 'invalid'})")
     return result
 
 
@@ -120,7 +121,22 @@ def build_snapshot(token: str, *, now: datetime | None = None) -> dict:
             found = 0
             meal_failures = 0
             raw_windows = _windows_for_meal(query_date, meal_id, token)
-            for raw in raw_windows:
+            def fetch_window(raw):
+                window_id = raw.get("windowid")
+                if (type(window_id) is not int
+                        or not isinstance(raw.get("windowname"), str)
+                        or "沙河" not in raw["windowname"] + str(raw.get("shopname") or "")):
+                    return raw, None, None
+                try:
+                    return raw, _public_dishes(query_date, meal_id, window_id, token), None
+                except (OSError, ValueError) as error:
+                    return raw, None, str(error)
+                finally:
+                    time.sleep(0.06)
+
+            with ThreadPoolExecutor(max_workers=6) as pool:
+                results = list(pool.map(fetch_window, raw_windows))
+            for raw, dishes, error in results:
                 window_id = raw.get("windowid")
                 name = raw.get("windowname")
                 canteen = raw.get("shopname")
@@ -129,11 +145,11 @@ def build_snapshot(token: str, *, now: datetime | None = None) -> dict:
                 if "沙河" not in name + str(canteen or ""):
                     continue
                 queries += 1
-                try:
-                    dishes = _public_dishes(query_date, meal_id, window_id, token)
-                except (OSError, ValueError):
+                if error is not None:
                     failures += 1
                     meal_failures += 1
+                    if meal_failures <= 2:
+                        print(f"Meal {meal} date {query_date} window {window_id}: {error}", flush=True)
                     continue
                 if dishes:
                     entry = windows_by_id.setdefault(window_id, {
@@ -144,10 +160,9 @@ def build_snapshot(token: str, *, now: datetime | None = None) -> dict:
                     })
                     entry["meals"][meal] = dishes
                     found += len(dishes)
-                time.sleep(0.06)
             print(f"Meal {meal} date {query_date}: {len(raw_windows)} windows returned, "
                   f"{found} dishes, {meal_failures} failed queries", flush=True)
-            if meal_failures:
+            if meal_failures and found:
                 raise ValueError(f"incomplete {meal} queries; keeping previous snapshot")
             if found:
                 meal_dates[meal] = query_date

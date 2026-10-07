@@ -31,3 +31,11 @@ class SnapshotTests(unittest.TestCase):
             return self.dishes
         with self.assertRaisesRegex(ValueError, 'incomplete'):
             self.snapshot(dishes)
+
+    def test_unavailable_today_lunch_can_fall_back(self):
+        def dishes(day, meal, window, token):
+            if meal == '11' and day == '20261007':
+                raise ValueError('menu query failed (retcode=500)')
+            return self.dishes if meal in ('11', '12') else []
+        result = self.snapshot(dishes)
+        self.assertEqual(result['meal_dates']['lunch'], '20261008')
